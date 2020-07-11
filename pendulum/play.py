@@ -10,14 +10,11 @@ def t(s):
     return torch.from_numpy(s).float()
 
 class Player:
-    def __init__(self, env_name):
-        if env_name == 'walker':
-            self.env = gym.make("BipedalWalker-v3")
-        else:
-            self.env = gym.make("Pendulum-v0")
+    def __init__(self):
+        self.env = gym.make("Pendulum-v0")
         self.actor = Actor(self.env.observation_space.shape[0], self.env.action_space.shape[0], self.env.action_space.high)
         try:
-            self.actor.load_state_dict(torch.load('actor_{}.pth'.format(env_name)))
+            self.actor.load_state_dict(torch.load('actor_pendulum.pth'))
         except:
             raise Exception("No weights found")
 
@@ -41,10 +38,7 @@ class Player:
         print(total_rew)
 
 def main():
-    if len(sys.argv) < 2:
-        print("Usage: ./play.py (pendulum|walker)")
-        return
-    Player(sys.argv[1]).play()
+    Player().play()
 
 if __name__ == "__main__":
     main()

@@ -14,22 +14,18 @@ def clip_grads(module, max_grad_norm):
     torch.nn.utils.clip_grad_norm_([p for g in module.param_groups for p in g["params"]], max_grad_norm)
 
 class Trainer:
-    def __init__(self, env_name):
-        self.GAMMA = 0.9
+    def __init__(self):
+        self.GAMMA = 0.99
         self.EPISODES_PER_EPOCH = 2000
         self.EPOCHS = 5
         
-        self.env_name = env_name
-        if env_name == 'walker':
-            self.env = gym.make("BipedalWalker-v3")
-        else:
-            self.env = gym.make("Pendulum-v0")
+        self.env = gym.make("Pendulum-v0")
 
         self.actor = Actor(self.env.observation_space.shape[0], self.env.action_space.shape[0], self.env.action_space.high)
         self.critic = Critic(self.env.observation_space.shape[0])
         try:
-            self.actor.load_state_dict(torch.load('actor_{}.pth'.format(env_name)))
-            self.critic.load_state_dict(torch.load('critic_{}.pth'.format(env_name)))
+            self.actor.load_state_dict(torch.load('actor_pendulum.pth'))
+            self.critic.load_state_dict(torch.load('critic_pendulum.pth'))
         except:
             print("Starting with new weights")
 
@@ -76,17 +72,14 @@ class Trainer:
                     
                 print("{} {}: {:0.2f}".format(epoch, i_episode, total_rew))
                 if i_episode % 100 == 0:
-                    torch.save(self.actor.state_dict(), 'actor_{}.pth'.format(self.env_name))
-                    torch.save(self.critic.state_dict(), 'critic_{}.pth'.format(self.env_name))
+                    torch.save(self.actor.state_dict(), 'actor_pendulum.pth'.format(self.env_name))
+                    torch.save(self.critic.state_dict(), 'critic_pendulum.pth'.format(self.env_name))
             self.scheduler_actor.step()
             self.scheduler_critic.step()
         self.env.close()
 
 def main():
-    if len(sys.argv) < 2:
-        print("Usage: ./train.py (pendulum|walker)")
-        return
-    Trainer(sys.argv[1]).train()
+    Trainer().train()
 
 if __name__ == "__main__":
     main()
